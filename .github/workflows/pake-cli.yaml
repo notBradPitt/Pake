@@ -43,20 +43,20 @@ on:
         required: false
         type: boolean
         default: true
-      multi_arch:
-        description: "[MultiArch, Optional, MacOS only]"
-        required: false
-        type: boolean
-        default: false
-      targets:
-        description: "[Targets, Optional, Linux only]"
-        required: false
-        default: "deb"
-        type: choice
-        options:
-        - "deb"
-        - "appimage"
-        - "all"
+#       multi_arch:
+#         description: "[MultiArch, Optional, MacOS only]"
+#         required: false
+#         type: boolean
+#         default: false
+#       targets:
+#         description: "[Targets, Optional, Linux only]"
+#         required: false
+#         default: "deb"
+#         type: choice
+#         options:
+#         - "deb"
+#         - "appimage"
+#         - "all"
 
 
 jobs:
