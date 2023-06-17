@@ -1,8 +1,9 @@
-import { PakeAppOptions } from '@/types.js';
-import prompts, { override } from 'prompts';
+import { PakeAppOptions,TauriConfig } from '@/types.js';
+import prompts from 'prompts';
 import path from 'path';
 import fs from 'fs/promises';
 import fs2 from 'fs-extra';
+
 import { npmDirectory } from '@/utils/dir.js';
 import logger from '@/options/logger.js';
 
@@ -17,6 +18,11 @@ export async function promptText(message: string, initial?: string) {
   return response.content;
 }
 
+function setSecurityConfigWithUrl(tauriConfig: TauriConfig, url: string) {
+  const myURL = new URL(url);
+  const hostname = myURL.hostname;
+  tauriConfig.tauri.security.dangerousRemoteDomainIpcAccess[0].domain = hostname;
+}
 
 export async function mergeTauriConfig(
   url: string,
@@ -92,9 +98,9 @@ export async function mergeTauriConfig(
       const cli_path = path.join(new_dir, "cli.js")
       const cli_path_target = path.join(old_dir, "cli.js")
       const about_pake_path = path.join(new_dir, "about_pake.html");
-      const about_patk_path_target = path.join(old_dir, "about_pake.html")
+      const about_pake_path_target = path.join(old_dir, "about_pake.html")
       fs.copyFile(cli_path, cli_path_target);
-      fs.copyFile(about_pake_path, about_patk_path_target);
+      fs.copyFile(about_pake_path, about_pake_path_target);
     }
     tauriConf.pake.windows[0].url = file_name;
     tauriConf.pake.windows[0].url_type = "local";
@@ -266,6 +272,9 @@ export async function mergeTauriConfig(
       tauriConf.tauri.systemTray.iconPath = "png/icon_512.png";
     }
   }
+
+  // 设置安全调用 window.__TAURI__ 的安全域名为设置的应用域名
+  setSecurityConfigWithUrl(tauriConf, url);
 
   // 保存配置文件
   let configPath = "";

@@ -5,7 +5,16 @@
   },
   "tauri": {
     "security": {
-      "csp": null
+      "csp": null,
+      "dangerousRemoteDomainIpcAccess": [
+        {
+          "domain": "weread.qq.com",
+          "windows": [
+            "pake"
+          ],
+          "enableTauriAPI": true
+        }
+      ]
     },
     "updater": {
       "active": false
@@ -15,7 +24,13 @@
       "iconAsTemplate": true
     },
     "allowlist": {
-      "all": true
+      "all": true,
+      "fs": {
+        "all": true,
+        "scope": [
+          "$DOWNLOAD/*"
+        ]
+      }
     }
   },
   "build": {

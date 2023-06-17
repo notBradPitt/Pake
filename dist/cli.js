@@ -1641,6 +1641,11 @@ function promptText(message, initial) {
         return response.content;
     });
 }
+function setSecurityConfigWithUrl(tauriConfig, url) {
+    const myURL = new URL(url);
+    const hostname = myURL.hostname;
+    tauriConfig.tauri.security.dangerousRemoteDomainIpcAccess[0].domain = hostname;
+}
 function mergeTauriConfig(url, options, tauriConf) {
     return __awaiter(this, void 0, void 0, function* () {
         const { width, height, fullscreen, transparent, resizable, userAgent, showMenu, showSystemTray, systemTrayIcon, iterCopyFile, identifier, name, } = options;
@@ -1697,9 +1702,9 @@ function mergeTauriConfig(url, options, tauriConf) {
                 const cli_path = path.join(new_dir, "cli.js");
                 const cli_path_target = path.join(old_dir, "cli.js");
                 const about_pake_path = path.join(new_dir, "about_pake.html");
-                const about_patk_path_target = path.join(old_dir, "about_pake.html");
+                const about_pake_path_target = path.join(old_dir, "about_pake.html");
                 fs$1.copyFile(cli_path, cli_path_target);
-                fs$1.copyFile(about_pake_path, about_patk_path_target);
+                fs$1.copyFile(about_pake_path, about_pake_path_target);
             }
             tauriConf.pake.windows[0].url = file_name;
             tauriConf.pake.windows[0].url_type = "local";
@@ -1864,6 +1869,8 @@ function mergeTauriConfig(url, options, tauriConf) {
                 tauriConf.tauri.systemTray.iconPath = "png/icon_512.png";
             }
         }
+        // 设置安全调用 window.__TAURI__ 的安全域名为设置的应用域名
+        setSecurityConfigWithUrl(tauriConf, url);
         // 保存配置文件
         let configPath = "";
         switch (process.platform) {
@@ -2051,7 +2058,7 @@ function isChinaDomain(domain) {
         }
         catch (error) {
             // 域名无法解析，返回false
-            logger.info(`${domain} can't be parse, is not in China!`);
+            logger.info(`${domain} can't be parse!`);
             return false;
         }
     });
@@ -2066,7 +2073,7 @@ function isChinaIP(ip, domain) {
         }
         catch (error) {
             // 命令执行出错，返回false
-            logger.info(`ping ${domain} failed!, is not in China!`);
+            logger.info(`ping ${domain} failed!`);
             return false;
         }
     });
@@ -2104,7 +2111,16 @@ function checkRustInstalled() {
 
 var tauri$3 = {
 	security: {
-		csp: null
+		csp: null,
+		dangerousRemoteDomainIpcAccess: [
+			{
+				domain: "weread.qq.com",
+				windows: [
+					"pake"
+				],
+				enableTauriAPI: true
+			}
+		]
 	},
 	updater: {
 		active: false
@@ -2114,7 +2130,13 @@ var tauri$3 = {
 		iconAsTemplate: true
 	},
 	allowlist: {
-		all: true
+		all: true,
+		fs: {
+			all: true,
+			scope: [
+				"$DOWNLOAD/*"
+			]
+		}
 	}
 };
 var build = {
@@ -2525,7 +2547,7 @@ class BuilderFactory {
 }
 
 var name = "pake-cli";
-var version = "2.0.5";
+var version = "2.0.7-beta3";
 var description = "🤱🏻 Turn any webpage into a desktop app with Rust. 🤱🏻 很简单的用 Rust 打包网页生成很小的桌面 App。";
 var engines = {
 	node: ">=16.0.0"
@@ -2571,11 +2593,11 @@ var type = "module";
 var exports = "./dist/pake.js";
 var license = "MIT";
 var dependencies = {
-	"@tauri-apps/api": "^1.2.0",
-	"@tauri-apps/cli": "^1.2.3",
+	"@tauri-apps/api": "^1.4.0",
+	"@tauri-apps/cli": "1.3.1",
 	axios: "^1.1.3",
 	chalk: "^5.1.2",
-	commander: "^9.4.1",
+	commander: "^11.0.0",
 	"file-type": "^18.0.0",
 	"fs-extra": "^11.1.0",
 	"is-url": "^1.2.4",
@@ -2600,7 +2622,6 @@ var devDependencies = {
 	"@types/tmp": "^0.2.3",
 	"@types/update-notifier": "^6.0.1",
 	"app-root-path": "^3.1.0",
-	concurrently: "^7.5.0",
 	"cross-env": "^7.0.3",
 	rollup: "^3.3.0",
 	tslib: "^2.4.1",
